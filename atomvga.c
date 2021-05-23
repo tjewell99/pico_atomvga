@@ -55,14 +55,14 @@ static void initialiseIO()
         gpio_set_function(pin, GPIO_FUNC_PIO1);
     }
 
-    // Output enable for the 74lvc245 buffers
-    gpio_pull_up(SEL1_PIN);
-    gpio_pull_up(SEL2_PIN);
-    gpio_pull_up(SEL3_PIN);
-
-    gpio_set_function(SEL1_PIN, GPIO_FUNC_PIO1);
-    gpio_set_function(SEL2_PIN, GPIO_FUNC_PIO1);
-    gpio_set_function(SEL3_PIN, GPIO_FUNC_PIO1);
+    for (int pin = SEL1_PIN; pin < SEL1_PIN + 3; pin++)
+    {
+        gpio_init(pin);
+        gpio_pull_up(pin);
+        gpio_set_dir(pin, GPIO_OUT);
+        gpio_put(pin, true);
+        gpio_set_function(pin, GPIO_FUNC_PIO1);
+    }
 
     // LED
     gpio_init(LED_PIN);
@@ -216,7 +216,7 @@ bool is_command(char *cmd)
     return false;
 }
 
-volatile bool support_lower = false;
+bool support_lower = false;
 
 void __no_inline_not_in_flash_func(main_loop())
 {
@@ -225,28 +225,23 @@ void __no_inline_not_in_flash_func(main_loop())
         // Get event from SM 0
         u_int32_t reg = pio_sm_get_blocking(pio, 0);
 
-        // Get the address
-        u_int16_t address = reg & 0xFFFF;
-
         // Is it a read or write opertaion?
         if (reg & 0x1000000)
         {
             // read
-            if (address == 0xBDEF)
+            const u_int16_t address = reg & 0xFFFF;
+            // if ((address & 0xFFF0) == 0xBDE0 || (address & 0xFF00) == 0xA00)
+            if ((address & 0xFFF0) == 0xBDE0)
             {
-                uint8_t b = 0x12;
-                pio_sm_put(pio, 1, 0xFF | (b << 8));
-            }
-            else if ((address & 0xFFF0) == 0xBDE0)
-            {
-                uint8_t b = memory[address];
+                const uint8_t b = memory[address];
                 pio_sm_put(pio, 1, 0xFF | (b << 8));
             }
         }
         else
         {
             // write
-            u_int8_t data = (reg & 0xFF0000) >> 16;
+            const u_int16_t address = reg & 0xFFFF;
+            const u_int8_t data = (reg & 0xFF0000) >> 16;
             memory[address] = data;
 
             // hack to reset the vga80x40 mode when BREAK is pressed
@@ -266,9 +261,6 @@ int main(void)
         vreg_set_voltage(VREG_VOLTAGE_1_25);
     }
     set_sys_clock_khz(sys_freq, true);
-    setup_default_uart();
-
-    stdio_init_all();
 
     for (uint i = FB_ADDR; i < FB_ADDR + 0x200; i++)
     {
@@ -289,8 +281,6 @@ int main(void)
 
     // wait for initialization of video to be complete
     sem_acquire_blocking(&video_initted);
-
-    //initialiseIO();
 
     uint offset = pio_add_program(pio, &test_program);
     test_program_init(pio, 0, offset);
@@ -618,6 +608,7 @@ void reset_vga80()
     memory[0xBDE0] = 0x00; // Normal text mode (vga80 off)
     memory[0xBDE4] = 0xB2; // Foreground Green
     memory[0xBDE5] = 0x00; // Background Black
+    memory[0xBDEF] = 0x12; // Version
 }
 
 void initialize_vga80()
