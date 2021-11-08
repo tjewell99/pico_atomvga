@@ -77,17 +77,17 @@ in the locations from assembler.
 
 $FF80   Command port, see command list below.
         Valid commands are :
-        $00 Turn debug line off
-        $01 Turn debug line off
-        $02 Turn lowercase chars off
+        $01 Turn debug line on
+        $02 Turn debug line off
         $03 Turn lowercase chars on
-        $04 Turn off artifact colours in pmode 4
-        $05 Turn on artifact colours set 1 in pmode 4
-        $06 Turn on artifact colours set 2 in pmode 4
-        $07 Save current settings to eeprom
-        $08 Load current settings from eeprom
-        $09 Disable automatic loading of settings from eprom at power on
-        $0A Enable automatic loading of settings from eprom at power on
+        $04 Turn lowercase chars off
+        $05 Turn off artifact colours in pmode 4
+        $06 Turn on artifact colours set 1 in pmode 4
+        $07 Turn on artifact colours set 2 in pmode 4
+        $08 Save current settings to eeprom
+        $09 Load current settings from eeprom
+        $OA Disable automatic loading of settings from eprom at power on
+        $0B Enable automatic loading of settings from eprom at power on
 
 $FF81   Select font number :
         $00 Default 6847 font
