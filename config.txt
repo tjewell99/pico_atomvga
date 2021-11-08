@@ -122,3 +122,13 @@ $FF84   Text / SG alternate Foreground colour, used when CSS=1
         Colours as Background        
         Invalid values leave colour unchanged.
 
+$FF85   Border colour - works across all modes.
+        $00 - $08 (as above)
+        $FF - return to default behaviour (black for text, white / green for graphics)
+
+$FF86   Swap two colours in the graphics palette. Uses a single byte as follows:
+
+        $08 - swaps colour 0 and 8 - green becomes black, black becomes green
+            (very effective in PMODE 3 games)
+        $48 - swaps colour 4 and 8 - swaps white and black
+            (very effective in PMODE 4 games)

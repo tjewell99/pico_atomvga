@@ -112,7 +112,7 @@ volatile uint16_t    SAMBits;
 
 #define GetSAMSG()      ((SAMBits & SAM_SG_MASK) >> SAM_SG_SHIFT)
 
-#define DEBUG_MESS  "DRAGON PICO VGA ADAPTER"
+#define DEBUG_MESS  "DRAGON PICO VGA ADAPTER TJ"
 
 // Masks to extract Inverse and !A/S bits from incoming video data in text / sg modes
 #define INV_MASK    0x40
@@ -126,6 +126,8 @@ volatile uint16_t    SAMBits;
 #define DRAGON_INK_ADDR     0xFF82
 #define DRAGON_PAPER_ADDR   0xFF83
 #define DRAGON_INKALT_ADDR  0xFF84
+#define DRAGON_BORDER_ADDR  0xFF85
+#define DRAGON_PALETTE_ADDR 0xFF86
 
 #define DRAGON_CMD_NONE     0x00
 #define DRAGON_CMD_DEBUG    0x01

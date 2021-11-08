@@ -37,6 +37,18 @@ uint16_t colour_palette_atom[NO_COLOURS] = {
     BLACK
 };
 
+uint16_t colour_palette_default[NO_COLOURS] = {
+    GREEN,
+    YELLOW,
+    BLUE,
+    RED,
+    WHITE,
+    CYAN,
+    MAGENTA,
+    ORANGE,
+    BLACK
+};
+
 #define IDX_GREEN   0
 #define IDX_YELLOW  1
 #define IDX_BLUE    2

@@ -55,6 +55,9 @@ volatile uint16_t ink = DEF_INK;
 volatile uint16_t ink_alt = DEF_INK_ALT;  
 volatile uint16_t paper = DEF_PAPER;
 
+volatile bool border_override = false;
+volatile uint16_t border = DEF_PAPER;
+
 volatile uint8_t autoload = 0;
 
 volatile uint8_t artifact = 0;
@@ -276,6 +279,40 @@ void switch_colour(uint8_t          newcolour,
     }
 }
 
+void switch_border(uint8_t          newcolour)
+{
+    if (newcolour < NO_COLOURS)
+    {
+        border=colour_palette_atom[newcolour];
+        border_override = true;
+    }
+
+    if (newcolour == 255 )
+    {
+        border_override = false;
+    }
+}
+
+void switch_palette(uint8_t          slots)
+{
+    uint8_t slot1 = slots / 16;
+    uint8_t slot2 = slots - slot1 * 16;
+
+    if ( ( slot1 < NO_COLOURS) && ( slot2 < NO_COLOURS)  )
+    {
+        colour_palette[slot1] = colour_palette_default[slot2];
+    }
+
+    // Reset the palette from the default
+    if (slots == 255 )
+    {
+        for ( int i = 0; i < NO_COLOURS; ++i)
+        {
+            colour_palette[i] = colour_palette_default[i];
+        }
+    }
+}
+
 volatile bool support_lower = false;
 
 #if (R65C02 == 1)
@@ -380,6 +417,14 @@ void __no_inline_not_in_flash_func(main_loop())
             if (DRAGON_INKALT_ADDR == address)
             {
                 switch_colour(data,&ink_alt);
+            }
+            if (DRAGON_BORDER_ADDR == address)
+            {
+                switch_border(data);
+            }
+            if (DRAGON_PALETTE_ADDR == address)
+            {
+                switch_palette(data);
             }
 #endif
         }
@@ -536,7 +581,10 @@ void save_ee(void)
         write_ee_bytes(EE_ADDRESS,EE_INK,(uint8_t *)&ink,sizeof(ink));
         write_ee_bytes(EE_ADDRESS,EE_PAPER,(uint8_t *)&paper,sizeof(paper));
         write_ee_bytes(EE_ADDRESS,EE_INK_ALT,(uint8_t *)&ink_alt,sizeof(ink_alt));
+        write_ee_bytes(EE_ADDRESS,EE_BORDER,(uint8_t *)&border,sizeof(border));
         write_ee(EE_ADDRESS,EE_ISLOWER,support_lower);
+
+        // Need to store the current palette too
 
         printf("fontno=%02X, ink=%04X, paper=%04X, alt_ink=%04X, lower=%d\n",fontno,ink,paper,ink_alt,support_lower);
     }
@@ -554,6 +602,7 @@ void load_ee(void)
         read_ee_bytes(EE_ADDRESS,EE_INK,(uint8_t *)&ink,sizeof(ink));
         read_ee_bytes(EE_ADDRESS,EE_PAPER,(uint8_t *)&paper,sizeof(paper));
         read_ee_bytes(EE_ADDRESS,EE_INK_ALT,(uint8_t *)&ink_alt,sizeof(ink_alt));
+        read_ee_bytes(EE_ADDRESS,EE_BORDER,(uint8_t *)&border,sizeof(border));
         read_ee(EE_ADDRESS,EE_ISLOWER,(uint8_t *)&support_lower);
 
         printf("fontno=%02X, ink=%04X, paper=%04X, alt_ink=%04X, lower=%d\n",fontno,ink,paper,ink_alt,support_lower);
@@ -604,6 +653,7 @@ void check_reset(void)
         {
             ink = DEF_INK;
             paper = DEF_PAPER;
+            border = DEF_PAPER;
             ink_alt = DEF_INK_ALT;
         }
 
@@ -793,6 +843,10 @@ void draw_color_bar(scanvideo_scanline_buffer_t *buffer)
     }
 
     uint16_t *palette = colour_palette;
+
+    // grab this now, before the palette gets shifted
+    uint16_t bg = palette[8];
+
     if (alt_colour())
     {
         palette += 4;
@@ -800,6 +854,10 @@ void draw_color_bar(scanvideo_scanline_buffer_t *buffer)
 
     // Graphics modes have a coloured border, text modes have a black border
     uint16_t border_colour = (mode & 1) ? palette[0] : 0;
+
+    // Unless overriden
+	border_colour = (border_override) ? border : border_colour;
+
     uint debug_end = debug ? debug_start + 24 : debug_start;
 
     if (relative_line_num < 0 || line_num >= debug_end)
@@ -883,22 +941,22 @@ void draw_color_bar(scanvideo_scanline_buffer_t *buffer)
                             {    
                                 for (uint32_t mask = 0x80000000; mask > 0;)
                                 {
-                                    uint16_t colour = (b & mask) ? fg : 0;
+                                    uint16_t colour = (b & mask) ? fg : bg;
                                     *p++ = colour;
                                     *p++ = colour;
                                     mask = mask >> 1;
 
-                                    colour = (b & mask) ? fg : 0;
+                                    colour = (b & mask) ? fg : bg;
                                     *p++ = colour;
                                     *p++ = colour;
                                     mask = mask >> 1;
 
-                                    colour = (b & mask) ? fg : 0;
+                                    colour = (b & mask) ? fg : bg;
                                     *p++ = colour;
                                     *p++ = colour;
                                     mask = mask >> 1;
 
-                                    colour = (b & mask) ? fg : 0;
+                                    colour = (b & mask) ? fg : bg;
                                     *p++ = colour;
                                     *p++ = colour;
                                     mask = mask >> 1;
@@ -926,7 +984,7 @@ void draw_color_bar(scanvideo_scanline_buffer_t *buffer)
                         {
                             for (uint32_t mask = 0x80000000; mask > 0; mask = mask >> 1)
                             {
-                                uint16_t colour = (b & mask) ? palette[0] : 0;
+                                uint16_t colour = (b & mask) ? palette[0] : bg;
                                 *p++ = colour;
                                 *p++ = colour;
                                 *p++ = colour;
@@ -937,7 +995,7 @@ void draw_color_bar(scanvideo_scanline_buffer_t *buffer)
                         {
                             for (uint32_t mask = 0x80000000; mask > 0; mask = mask >> 1)
                             {
-                                uint16_t colour = (b & mask) ? palette[0] : 0;
+                                uint16_t colour = (b & mask) ? palette[0] : bg;
                                 *p++ = colour;
                                 *p++ = colour;
                                 *p++ = colour;
