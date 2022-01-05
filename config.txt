@@ -128,8 +128,8 @@ $FF85   Border colour - works across all modes.
 
 $FF86   Change the colour in one slot of the palette. Uses a single byte as follows:
 
-        Swap colours 0 and 8 - green becomes black, black becomes green
-        POKE &HFF86,&H08 (colour slot 0 becomes black)
-        POKE &HFF86,&H80 (colour slot 8 becomes white)
+        Swap colours 4 and 8 - white becomes black, black becomes white
+        POKE &HFF86,&H48 (colour slot 4 becomes black)
+        POKE &HFF86,&H84 (colour slot 8 becomes white)
 
         $FF returns to the defaults

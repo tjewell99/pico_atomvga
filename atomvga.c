@@ -584,7 +584,17 @@ void save_ee(void)
         write_ee_bytes(EE_ADDRESS,EE_BORDER,(uint8_t *)&border,sizeof(border));
         write_ee(EE_ADDRESS,EE_ISLOWER,support_lower);
 
-        // Need to store the current palette too
+        // I'm sure there's a smarter way of doing this
+        
+        write_ee_bytes(EE_ADDRESS,EE_COLOUR0,(uint8_t *)&colour_palette_atom[0],sizeof(colour_palette_atom[0]));
+        write_ee_bytes(EE_ADDRESS,EE_COLOUR1,(uint8_t *)&colour_palette_atom[1],sizeof(colour_palette_atom[1]));
+        write_ee_bytes(EE_ADDRESS,EE_COLOUR2,(uint8_t *)&colour_palette_atom[2],sizeof(colour_palette_atom[2]));
+        write_ee_bytes(EE_ADDRESS,EE_COLOUR3,(uint8_t *)&colour_palette_atom[3],sizeof(colour_palette_atom[3]));
+        write_ee_bytes(EE_ADDRESS,EE_COLOUR4,(uint8_t *)&colour_palette_atom[4],sizeof(colour_palette_atom[4]));
+        write_ee_bytes(EE_ADDRESS,EE_COLOUR5,(uint8_t *)&colour_palette_atom[5],sizeof(colour_palette_atom[5]));
+        write_ee_bytes(EE_ADDRESS,EE_COLOUR6,(uint8_t *)&colour_palette_atom[6],sizeof(colour_palette_atom[6]));
+        write_ee_bytes(EE_ADDRESS,EE_COLOUR7,(uint8_t *)&colour_palette_atom[7],sizeof(colour_palette_atom[7]));
+        write_ee_bytes(EE_ADDRESS,EE_COLOUR8,(uint8_t *)&colour_palette_atom[8],sizeof(colour_palette_atom[8]));
 
         printf("fontno=%02X, ink=%04X, paper=%04X, alt_ink=%04X, lower=%d\n",fontno,ink,paper,ink_alt,support_lower);
     }
@@ -604,6 +614,16 @@ void load_ee(void)
         read_ee_bytes(EE_ADDRESS,EE_INK_ALT,(uint8_t *)&ink_alt,sizeof(ink_alt));
         read_ee_bytes(EE_ADDRESS,EE_BORDER,(uint8_t *)&border,sizeof(border));
         read_ee(EE_ADDRESS,EE_ISLOWER,(uint8_t *)&support_lower);
+
+        read_ee_bytes(EE_ADDRESS,EE_COLOUR0,(uint8_t *)&colour_palette_atom[0],sizeof(colour_palette_atom[0]));
+        read_ee_bytes(EE_ADDRESS,EE_COLOUR1,(uint8_t *)&colour_palette_atom[1],sizeof(colour_palette_atom[1]));
+        read_ee_bytes(EE_ADDRESS,EE_COLOUR2,(uint8_t *)&colour_palette_atom[2],sizeof(colour_palette_atom[2]));
+        read_ee_bytes(EE_ADDRESS,EE_COLOUR3,(uint8_t *)&colour_palette_atom[3],sizeof(colour_palette_atom[3]));
+        read_ee_bytes(EE_ADDRESS,EE_COLOUR4,(uint8_t *)&colour_palette_atom[4],sizeof(colour_palette_atom[4]));
+        read_ee_bytes(EE_ADDRESS,EE_COLOUR5,(uint8_t *)&colour_palette_atom[5],sizeof(colour_palette_atom[5]));
+        read_ee_bytes(EE_ADDRESS,EE_COLOUR6,(uint8_t *)&colour_palette_atom[6],sizeof(colour_palette_atom[6]));
+        read_ee_bytes(EE_ADDRESS,EE_COLOUR7,(uint8_t *)&colour_palette_atom[7],sizeof(colour_palette_atom[7]));
+        read_ee_bytes(EE_ADDRESS,EE_COLOUR8,(uint8_t *)&colour_palette_atom[8],sizeof(colour_palette_atom[8]));
 
         printf("fontno=%02X, ink=%04X, paper=%04X, alt_ink=%04X, lower=%d\n",fontno,ink,paper,ink_alt,support_lower);
     }
